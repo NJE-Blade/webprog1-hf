@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React | EI253U</title>
+    <script src="assets/adatbazis.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+    <div id="root"></div>
+    <script type="text/babel">
+
+        function Page() {
+
+            var stateArray = React.useState(gep);
+            var notebookList = stateArray[0];
+            var setNotebookList = stateArray[1];
+
+            var [formData, setFormData] = React.useState({
+                index: -1,
+                gyarto: "",
+                tipus: "",
+                kijelzo: "",
+                memoria: "",
+                merevlemez: "",
+                videovezerlo: "",
+                ar: "",
+                processzorid: "",
+                oprendszerid: "",
+                db: ""
+            });
+            
+            //űrlap változás
+            function handleChange(event) {
+                var id = event.target.id;
+                var value = event.target.value;
+                
+                var ujAdat = {};
+                for (var kulcs in formData) { ujAdat[kulcs] = formData[kulcs]; }
+                ujAdat[id] = value;
+                
+                setFormData(ujAdat);
+            }
+
+            //módosítás gomb
+            function handleEdit(index) {
+                var n = notebookList[index];
+                setFormData({
+                    index: index,
+                    gyarto: n.gyarto,
+                    tipus: n.tipus,
+                    kijelzo: n.kijelzo,
+                    memoria: n.memoria,
+                    merevlemez: n.merevlemez,
+                    videovezerlo: n.videovezerlo,
+                    ar: n.ar,
+                    processzorid: n.processzorid,
+                    oprendszerid: n.oprendszerid,
+                    db: n.db
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            //űrlap reset
+            function handleReset() {
+                setFormData({
+                    index: -1,
+                    gyarto: "",
+                    tipus: "",
+                    kijelzo: "",
+                    memoria: "",
+                    merevlemez: "",
+                    videovezerlo: "",
+                    ar: "",
+                    processzorid: "",
+                    oprendszerid: "",
+                    db: ""
+                });
+            }
+            
+            //űrlap mentés
+            function handleSave(event) {
+                if (event) event.preventDefault();
+
+                if (formData.gyarto && formData.tipus && formData.ar) {
+                    var ujLista = [];
+                    for (var i = 0; i < gep.length; i++) {
+                        ujLista.push(gep[i]);
+                    }
+
+                    if (formData.index === -1) {
+                        var maxId = 0;
+                        for (var i = 0; i < gep.length; i++) {
+                            if (gep[i].id > maxId) maxId = gep[i].id;
+                        }
+
+                        var ujGep = {
+                            id: maxId + 1,
+                            gyarto: formData.gyarto,
+                            tipus: formData.tipus,
+                            kijelzo: formData.kijelzo,
+                            memoria: parseInt(formData.memoria) || 0,
+                            merevlemez: parseInt(formData.merevlemez) || 0,
+                            videovezerlo: formData.videovezerlo,
+                            ar: parseInt(formData.ar) || 0,
+                            processzorid: parseInt(formData.processzorid) || 0,
+                            oprendszerid: parseInt(formData.oprendszerid) || 0,
+                            db: parseInt(formData.db) || 0
+                        };
+
+                        gep.push(ujGep);
+                        ujLista.push(ujGep);
+                    } else {
+                        var idx = formData.index;
+                        gep[idx].gyarto = formData.gyarto;
+                        gep[idx].tipus = formData.tipus;
+                        gep[idx].kijelzo = formData.kijelzo;
+                        gep[idx].memoria = parseInt(formData.memoria);
+                        gep[idx].merevlemez = parseInt(formData.merevlemez);
+                        gep[idx].videovezerlo = formData.videovezerlo;
+                        gep[idx].ar = parseInt(formData.ar);
+                        gep[idx].processzorid = parseInt(formData.processzorid);
+                        gep[idx].oprendszerid = parseInt(formData.oprendszerid);
+                        gep[idx].db = parseInt(formData.db);
+                        
+                        ujLista[idx] = gep[idx];
+                    }
+
+                    setNotebookList(ujLista);
+                    handleReset();
+                } else {
+                    alert("Kérjük, töltse ki a gyártót, típust és az árat!");
+                }
+            }
+
+            //töréls gomb
+            function handleDelete(index) {
+                if (window.confirm("Biztosan törölni szeretné ezt a gépet?")) {
+                    gep.splice(index, 1);
+
+                    var ujLista = [];
+                    
+                    for (var i = 0; i < gep.length; i++) {
+                        ujLista.push(gep[i]);
+                    }
+
+                    setNotebookList(ujLista);
+                }
+            }
+
+            return (
+                <div>
+                    <Menu />
+                    <Main
+                        adatok={notebookList}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            onChange={handleChange}
+            onSave={handleSave}   // <--- Ezt add hozzá!
+            onReset={handleReset} // <--- Ezt add hozzá!
+            formData={formData}
+                    />
+                    <Footer />
+                </div>
+            );
+        }
+
+        //menüsor
+        function Menu() {
+            return (
+                <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+                    <div className="container">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div className="collapse navbar-collapse" id="navbarNav">
+                            <ul className="navbar-nav mx-auto">
+                                <MenuItem content="Főoldal" link="index.html" class="nav-link" />
+                                <MenuItem content="JavaScript" link="javascript.html"  class="nav-link" />
+                                <MenuItem content="React" link="react.html"  class="nav-link active" />
+                                <MenuItem content="SPA" link="spa.html" class="nav-link" />
+                                <MenuItem content="Fetch API" link="fetch.html" class="nav-link" />
+                                <MenuItem content="Axios" link="axios.html" class="nav-link" />
+                                <MenuItem content="OOJS" link="oojs.html" class="nav-link" />
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            );
+        }
+
+        //menüpont
+        function MenuItem(props) {
+            return (
+                <li className="menu-item">
+                    <a className={props.class} href={props.link}>
+                        {props.content}
+                    </a>
+                </li>
+            );
+        }
+
+        //main
+        function Main(props) {
+            return (
+                <main class="container my-5" id="main">
+                    <h2 class="mb-4">ReNew Kft. - Notebook kezelő (1-03-Notebook)</h2>
+                    <Card 
+                        adatok={props.adatok} 
+                onDelete={props.onDelete} 
+                onEdit={props.onEdit}
+                onChange={props.onChange}
+                formData={props.formData} // <--- Ez hiányzott
+                onSave={props.onSave}
+                onReset={props.onReset}
+                 />
+                </main>
+            );
+        }
+
+        //kártya
+        function Card(props) {
+            return (
+                <div class="card shadow-sm mb-4" id="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Notebook adatainak rögzítése</h5>
+                        <div class="row g-3">
+                            <Form 
+                                formData={props.formData} 
+                                onChange={props.onChange} 
+                                onSave={props.onSave}
+                                onReset={props.onReset}
+                            />
+                            <Table 
+                                adatok={props.adatok}
+                                onDelete={props.onDelete}
+                                onEdit={props.onEdit}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        //form
+        function Form(props) {
+            return (
+                <form onSubmit={props.onSave} id="form">
+                    <input type="hidden" id="editIndex" value={props.formData.index} />
+                    <FormInput content="Gyártó" id="gyarto" type="text" value={props.formData.gyarto} onChange={props.onChange} />
+                    <FormInput content="Típus" id="tipus" type="text" value={props.formData.tipus} onChange={props.onChange} />
+                    <FormInput content="Kijelző" id="kijelzo" type="text" value={props.formData.kijelzo} onChange={props.onChange} />
+                    <FormInput content="Memória (MiB)" id="memoria" type="number" value={props.formData.memoria} onChange={props.onChange} />
+                    <FormInput content="Merevlemez (GB)" id="merevlemez" type="number" value={props.formData.merevlemez} onChange={props.onChange} />
+                    <FormInput content="Videóvezérlő" id="videovezerlo" type="text" value={props.formData.videovezerlo} onChange={props.onChange} />
+                    <FormInput content="Ár (Pengő)" id="ar" type="number" value={props.formData.ar} onChange={props.onChange} />
+                    <FormSelect content="Processzor típusa" id="processzorid" value={props.formData.processzorid} onChange={props.onChange} />
+                    <FormSelect content="Op.rendszer típusa" id="oprendszerid" value={props.formData.oprendszerid} onChange={props.onChange} />
+                    <FormInput content="Raktáron (db)" id="db" type="number" value={props.formData.db} onChange={props.onChange} />
+                    <div class="mb-3">
+                        <Button content="Mentés" class="btn btn-primary" type="submit"  />
+                        <Button content="Mégsem" class="btn btn-secondary" onClick={props.onReset} />
+                    </div>
+                </form>
+            );
+        }
+
+        //egy input
+        function FormInput(props) {
+            return (
+                <div class="mb-3">
+                    <label for={props.id} class="form-label">{props.content}</label>
+                    <input type={props.type} id={props.id} class="form-control" onChange={props.onChange} value={props.value} required />
+                </div>
+            );
+        }
+
+        //egy select
+        function FormSelect(props) {
+            var options = [];
+            
+            options.push(<option key="default" value="">{props.content}...</option>);
+            
+            var adatTomb = props.id === "processzorid" ? processzor : oprendszer;
+            
+            for (var i = 0; i < adatTomb.length; i++) {
+                var item = adatTomb[i];
+                var szoveg = item.nev ? item.nev : item.gyarto + " " + item.tipus;
+                
+                options.push(
+                    <option key={item.id} value={item.id}>
+                        {szoveg}
+                    </option>
+                );
+            }
+
+            return (
+                <div className="mb-3">
+                    <label htmlFor={props.id} className="form-label">{props.content}</label>
+                    <select 
+                        id={props.id} 
+                        className="form-select" 
+                        onChange={props.onChange} 
+                        value={props.value} 
+                        required
+                    >
+                        {options}
+                    </select>
+                </div>
+            );
+        }
+
+        //egy option a selectben
+        function SelectOption(props) {
+            return (
+                <option value={props.value}>{props.content}</option>
+            );
+        }
+
+        //egy gomb
+        function Button(props) {
+            return (
+                <button type={props.type} class={props.class} onclick={props.onClick}>{props.content}</button>
+            );
+        }
+
+        //táblázat
+        function Table(props) {
+            return (
+                <div className="table-responsive bg-white p-3 rounded shadow-sm">
+                    <table className="table table-hover align-middle">
+                        <TableHead />
+                        <TableBody adatok={props.adatok} onDelete={props.onDelete} onEdit={props.onEdit} />
+                    </table>
+                </div>
+            );
+        }
+
+        //tábla fej
+        function TableHead() {
+            return (
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Gyártó</th>
+                        <th>Típus</th>
+                        <th>Kijelző</th>
+                        <th>Memória (MiB)</th>
+                        <th>Merevlemez (GB)</th>
+                        <th>Videóvezérlő</th>
+                        <th>Ár (Pengő)</th>
+                        <th>Processzor</th>
+                        <th>Oprendszer</th>
+                        <th>Raktáron (db)</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+            );
+        }
+
+        //táblatörzs
+        function TableBody(props) {
+            var tableRows = [];
+
+            for (var i = 0; i < props.adatok.length; i++) {
+                var n = props.adatok[i];
+                let currentIndex = i;
+                
+                tableRows.push(
+                    <tr key={n.id}>
+                        <TableCell content={n.id} />
+                        <TableCell content={n.gyarto} />
+                        <TableCell content={n.tipus} />
+                        <TableCell content={n.kijelzo} />
+                        <TableCell content={n.memoria} />
+                        <TableCell content={n.merevlemez} />
+                        <TableCell content={n.videovezerlo} />
+                        <TableCell content={n.ar} />
+                        <TableCell content={getProcName(n.processzorid)} />
+                        <TableCell content={getOpName(n.oprendszerid)} />
+                        <TableCell content={n.db} />
+                        <TableCell content={
+                            <>
+                                <button className="btn btn-warning btn-sm me-1" onClick={function() { props.onEdit(currentIndex); }}>Módosítás</button>
+                                <button className="btn btn-danger btn-sm" onClick={function() { props.onDelete(currentIndex); }}>Törlés</button>
+                            </>
+                        } />
+                    </tr>
+                ); 
+            }
+
+            return (
+                <tbody id="notebookTable">
+                    {tableRows}
+                </tbody>
+            );
+        }
+
+        //egy cella
+        function TableCell(props) {
+            return (
+                <td>
+                    {props.content}
+                </td>
+            );
+        }
+
+        //footer
+        function Footer() {
+            return (
+                <footer class="py-4">
+                    <div class="container text-center">
+                        <p class="mb-0">Készítették:</p>
+                        <p class="fw-bold">Borsos Gábor (VUJ237) & Bubori Sándor Attila (EI253U)</p>
+                    </div>
+                </footer>
+            );
+        }
+
+        //render
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Page />);
+        
+        //processzor neve id alapján
+        function getProcName(id) {
+            var eredmeny = "Ismeretlen";
+            
+            for (var i = 0; i < processzor.length; i++) {
+                if (processzor[i].id == id) {
+                    eredmeny = processzor[i].gyarto + " " + processzor[i].tipus;
+                    break;
+                }
+            }
+            
+            return eredmeny;
+        }
+        
+        //oprendszer neve id alapján
+        function getOpName(id) {
+            var nev = "Ismeretlen";
+            
+            for (var i = 0; i < oprendszer.length; i++) {
+                if (oprendszer[i].id == id) {
+                    nev = oprendszer[i].nev;
+                    break;
+                }
+            }
+            
+            return nev;
+        }
+
+    </script>
+
+</body>
+</html>
