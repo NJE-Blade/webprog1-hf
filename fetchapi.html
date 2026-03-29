@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch API | VUJ237</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Főoldal</a></li>
+                    <li class="nav-item"><a class="nav-link" href="javascript.html">JavaScript</a></li>
+                    <li class="nav-item"><a class="nav-link" href="react.html">React</a></li>
+                    <li class="nav-item"><a class="nav-link" href="spa.html">SPA</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="fetchapi.html">Fetch API</a></li>
+                    <li class="nav-item"><a class="nav-link" href="axios.html">Axios</a></li>
+                    <li class="nav-item"><a class="nav-link" href="oojs.html">OOJS</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+       <div class="card shadow-sm mb-4 border-0">
+    <div class="card-body p-4">
+        <h5 class="card-title mb-4 fw-bold">Notebook adatainak rögzítése</h5>
+        <form onsubmit="event.preventDefault(); saveNotebook();">
+            <input type="hidden" id="editId" value="-1">
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="gyarto" class="form-label fw-bold">Gyártó</label>
+                    <input type="text" id="gyarto" class="form-control bg-light"required>
+                </div>
+                <div class="col-md-4">
+                    <label for="tipus" class="form-label fw-bold">Típus</label>
+                    <input type="text" id="tipus" class="form-control bg-light" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="kijelzo" class="form-label fw-bold">Kijelző mérete</label>
+                    <input type="text" id="kijelzo" class="form-control bg-light" required>
+                </div>
+
+                <div class="col-md-3">
+                    <label for="memoria" class="form-label fw-bold">Memória (MiB)</label>
+                    <input type="number" id="memoria" class="form-control bg-light" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="merevlemez" class="form-label fw-bold">HDD/SSD (GB)</label>
+                    <input type="number" id="merevlemez" class="form-control bg-light" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="videovezerlo" class="form-label fw-bold">Videóvezérlő</label>
+                    <input type="text" id="videovezerlo" class="form-control bg-light" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="procSelect" class="form-label fw-bold">Processzor</label>
+                    <select id="procSelect" class="form-select bg-light" required></select>
+                </div>
+                <div class="col-md-4">
+                    <label for="opSelect" class="form-label fw-bold">Op.rendszer</label>
+                    <select id="opSelect" class="form-select bg-light" required></select>
+                </div>
+                <div class="col-md-2">
+                    <label for="ar" class="form-label fw-bold">Ár (Pengő)</label>
+                    <input type="number" id="ar" class="form-control bg-light" required>
+                </div>
+                <div class="col-md-2">
+                    <label for="db" class="form-label fw-bold">Raktáron (db)</label>
+                    <input type="number" id="db" class="form-control bg-light" required>
+                </div>
+
+                <div class="col-12 text-end mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="formReset();">Mégsem</button>
+                    <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">Mentés</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+        <div class="table-responsive bg-white p-3 rounded shadow-sm">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Gyártó</th>
+                        <th>Típus</th>
+                        <th>Kijelző</th>
+                        <th>Memória (MiB)</th>
+                        <th>Merevlemez (GB)</th>
+                        <th>Videóvezérlő</th>
+                        <th>Ár (Pengő)</th>
+                        <th>Processzor</th>
+                        <th>Oprendszer</th>
+                        <th>Raktáron (db)</th>
+                        <th>Műveletek</th>
+                    </tr>
+                </thead>
+                <tbody id="notebookTable"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="py-4">
+        <div class="container text-center">
+            <p class="mb-0">Készítették:</p>
+            <p class="fw-bold">Borsos Gábor (VUJ237) & Bubori Sándor Attila (EI253U)</p>
+        </div>
+    </footer>
+
+    <script>
+        const API = 'api.php';
+
+        var processzorLista = [];
+        var oprendszerLista = [];
+
+        function getProcName(id) {
+            var p = processzorLista.find(function(p) { return p.id == id; });
+            return p ? p.gyarto + ' ' + p.tipus : 'Ismeretlen';
+        }
+
+        function getOpName(id) {
+            var o = oprendszerLista.find(function(o) { return o.id == id; });
+            return o ? o.nev : 'Ismeretlen';
+        }
+
+        function fillSelects() {
+            var pSelect = document.getElementById('procSelect');
+            var oSelect = document.getElementById('opSelect');
+
+            pSelect.innerHTML = '<option value="">Processzor...</option>';
+            processzorLista.forEach(function(p) {
+                pSelect.innerHTML += '<option value="' + p.id + '">' + p.gyarto + ' ' + p.tipus + '</option>';
+            });
+
+            oSelect.innerHTML = '<option value="">Op.rendszer...</option>';
+            oprendszerLista.forEach(function(o) {
+                oSelect.innerHTML += '<option value="' + o.id + '">' + o.nev + '</option>';
+            });
+        }
+
+        function renderTable(gepek) {
+            var tableBody = document.getElementById('notebookTable');
+            tableBody.innerHTML = '';
+
+            gepek.forEach(function(n) {
+                tableBody.innerHTML +=
+                    '<tr>' +
+                        '<td>' + n.id + '</td>' +
+                        '<td>' + n.gyarto + '</td>' +
+                        '<td>' + n.tipus + '</td>' +
+                        '<td>' + n.kijelzo + '</td>' +
+                        '<td>' + n.memoria + '</td>' +
+                        '<td>' + n.merevlemez + '</td>' +
+                        '<td>' + n.videovezerlo + '</td>' +
+                        '<td>' + n.ar + '</td>' +
+                        '<td>' + getProcName(n.processzorid) + '</td>' +
+                        '<td>' + getOpName(n.oprendszerid) + '</td>' +
+                        '<td>' + n.db + '</td>' +
+                        '<td>' +
+                            '<button class="btn btn-warning btn-sm" onclick="editNotebook(' + n.id + ')">Módosítás</button> ' +
+                            '<button class="btn btn-danger btn-sm" onclick="deleteNotebook(' + n.id + ')">Törlés</button>' +
+                        '</td>' +
+                    '</tr>';
+            });
+        }
+
+        function loadData() {
+            var formData = new FormData();
+            formData.append('action', 'read');
+
+            fetch(API, { method: 'POST', body: formData })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    if (result.status === 'success') {
+                        renderTable(result.data);
+                    } else {
+                        alert('Hiba az adatok betöltésekor!');
+                    }
+                });
+        }
+
+        function saveNotebook() {
+            var id = document.getElementById('editId').value;
+            var action = (id === '-1') ? 'create' : 'update';
+
+            var formData = new FormData();
+            formData.append('action', action);
+            if (action === 'update') formData.append('id', id);
+            formData.append('gyarto',       document.getElementById('gyarto').value);
+            formData.append('tipus',        document.getElementById('tipus').value);
+            formData.append('kijelzo',      document.getElementById('kijelzo').value);
+            formData.append('memoria',      document.getElementById('memoria').value);
+            formData.append('merevlemez',   document.getElementById('merevlemez').value);
+            formData.append('videovezerlo', document.getElementById('videovezerlo').value);
+            formData.append('ar',           document.getElementById('ar').value);
+            formData.append('processzorid', document.getElementById('procSelect').value);
+            formData.append('oprendszerid', document.getElementById('opSelect').value);
+            formData.append('db',           document.getElementById('db').value);
+
+            fetch(API, { method: 'POST', body: formData })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    if (result.status === 'success') {
+                        loadData();
+                        formReset();
+                    } else {
+                        alert('Hiba a mentés során!');
+                    }
+                });
+        }
+
+        function deleteNotebook(id) {
+            if (confirm('Biztosan törölni szeretné ezt a gépet?')) {
+                var formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('id', id);
+
+                fetch(API, { method: 'POST', body: formData })
+                    .then(function(response) { return response.json(); })
+                    .then(function(result) {
+                        if (result.status === 'success') {
+                            loadData();
+                        } else {
+                            alert('Hiba a törlés során!');
+                        }
+                    });
+            }
+        }
+
+        function editNotebook(id) {
+            var formData = new FormData();
+            formData.append('action', 'read');
+
+            fetch(API, { method: 'POST', body: formData })
+                .then(function(response) { return response.json(); })
+                .then(function(result) {
+                    var n = result.data.find(function(g) { return g.id == id; });
+                    if (!n) return;
+
+                    document.getElementById('editId').value        = n.id;
+                    document.getElementById('gyarto').value        = n.gyarto;
+                    document.getElementById('tipus').value         = n.tipus;
+                    document.getElementById('kijelzo').value       = n.kijelzo;
+                    document.getElementById('memoria').value       = n.memoria;
+                    document.getElementById('merevlemez').value    = n.merevlemez;
+                    document.getElementById('videovezerlo').value  = n.videovezerlo;
+                    document.getElementById('ar').value            = n.ar;
+                    document.getElementById('procSelect').value    = n.processzorid;
+                    document.getElementById('opSelect').value      = n.oprendszerid;
+                    document.getElementById('db').value            = n.db;
+
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+        }
+
+        function formReset() {
+            document.getElementById('editId').value          = '-1';
+            document.getElementById('gyarto').value          = '';
+            document.getElementById('tipus').value           = '';
+            document.getElementById('kijelzo').value         = '';
+            document.getElementById('memoria').value         = '';
+            document.getElementById('merevlemez').value      = '';
+            document.getElementById('videovezerlo').value    = '';
+            document.getElementById('ar').value              = '';
+            document.getElementById('procSelect').value      = '';
+            document.getElementById('opSelect').value        = '';
+            document.getElementById('db').value              = '';
+        }
+
+        var fdProc = new FormData();
+        fdProc.append('action', 'read_processzor');
+
+        var fdOp = new FormData();
+        fdOp.append('action', 'read_oprendszer');
+
+        Promise.all([
+            fetch(API, { method: 'POST', body: fdProc }).then(function(r) { return r.json(); }),
+            fetch(API, { method: 'POST', body: fdOp  }).then(function(r) { return r.json(); })
+        ]).then(function(results) {
+            processzorLista = results[0].data;
+            oprendszerLista = results[1].data;
+            fillSelects();
+            loadData();
+        });
+
+    </script>
+</body>
+</html>
