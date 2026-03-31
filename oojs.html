@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOJS | VUJ237</title>
+    <script src="assets/adatbazis.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Főoldal</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript.html">JavaScript</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="react.html">React</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="spa.html">SPA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="fetchapi.html">Fetch API</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="axios.html">Axios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="oojs.html">OOJS</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5">
+        <div class="container" id="oojs" style="min-height: 400px;">
+        </div>
+    </main>
+
+    <footer class="py-4">
+        <div class="container text-center">
+            <p class="mb-0">Készítették:</p>
+            <p class="fw-bold">Borsos Gábor (VUJ237) & Bubori Sándor Attila (EI253U)</p>
+        </div>
+    </footer>
+
+    <script>
+		class Shape {
+			constructor(color, size, containerId) {
+				this.color = color;
+				this.size = size;
+				this.container = document.getElementById('oojs');
+				this.domElement = document.createElement('div');
+			}
+
+			render() {
+				
+				this.domElement.style.position = 'absolute';
+				this.domElement.style.width = `${this.size}px`;
+				this.domElement.style.height = `${this.size}px`;
+				this.domElement.style.backgroundColor = this.color;
+				this.domElement.style.transition = 'all 0.8s ease-in-out';
+				
+				this.container.style.position = 'relative';
+				this.container.style.overflow = 'hidden';
+				
+				this.updatePosition();
+				
+				this.container.appendChild(this.domElement);
+			}
+
+			
+			updatePosition() {
+				const maxWidth = this.container.clientWidth - this.size;
+				const maxHeight = this.container.clientHeight - this.size;
+				
+				this.domElement.style.left = `${Math.random() * maxWidth}px`;
+				this.domElement.style.top = `${Math.random() * maxHeight}px`;
+			}
+		}
+
+
+		class Circle extends Shape {
+			constructor(color, size, containerId) {
+				super(color, size, containerId); // super hívás
+			}
+
+			render() {
+				super.render();
+				this.domElement.style.borderRadius = '50%';
+			}
+		}
+
+
+		class Square extends Shape {
+			constructor(color, size, containerId) {
+				super(color, size, containerId);
+			}
+			
+		}
+
+		const shapes = [];
+
+		function inditas() {
+			for(let i = 0; i < 8; i++) {
+				const c = new Circle('#ff5733', 40, 'jatek-ter');
+				c.render();
+				shapes.push(c);
+
+				const s = new Square('#33c1ff', 40, 'jatek-ter');
+				s.render();
+				shapes.push(s);
+			}
+		}
+
+
+		setInterval(() => {
+			shapes.forEach(shape => shape.updatePosition());
+		}, 2000);
+
+
+		window.onload = inditas;
+	</script>
+</body>
+</html>
