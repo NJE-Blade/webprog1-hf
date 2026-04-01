@@ -29,7 +29,7 @@ A fejlesztés során az alábbi nyelveket és technológiákat alkalmaztuk:
 Csapattagok
 ===========
 
-A Blade csapat tagjai:
+A csapat tagjai:
 
 * VUJ237
 * EI253U
